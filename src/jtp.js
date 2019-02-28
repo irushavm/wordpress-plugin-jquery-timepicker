@@ -7,68 +7,95 @@
 		fields: {
 			single: [],
 			duration: [],
-		},
-		time_default: function () {
-			var time = new Date();
-			time.setMinutes(Math.round(time.getMinutes() /15) * 15);
-			return time;
 		}
 	};
 
 	function jtp_set_timepicker_single_listeners() {
-		jQuery(jtp_opts.fields.single).each(function(){
-			if(!this.timepicker_applied) {
-				jQuery(this).timepicker({
-					timeFormat: jtp_opts.format,
-					step: jtp_opts.step,
-				});
-				jQuery(this).timepicker('setTime', jtp_opts.time_default());
-				this.timepicker_applied = true;
+		jtp_opts.fields.single.forEach(function (elname) {
+			var el = jQuery(elname);
+			if (!el.hasClass('timepicker_applied')) {
+				el.timepicker({	timeFormat: jtp_opts.format, step: jtp_opts.step });
+				el.addClass('timepicker_applied');
 			}
 		});
 	}
 
-	function jtp_set_timepicker_duration_listeners(){
-		jQuery(jtp_opts.fields.duration).each(function(){
-			if(!this.timepicker_applied) {
-				jQuery(this).timepicker({
-					timeFormat: jtp_opts.format,
-					step: jtp_opts.step,
-					showDuration: true,
-				});
-				jQuery(this).timepicker('setTime', jtp_opts.time_default());
-				this.timepicker_applied = true;
+	function jtp_set_timepicker_duration_listeners() {
+		jtp_opts.fields.duration.forEach(function (elName) {
+			var el;
+			if (elName.includes(":start")) {
+				elName = elName.replace(':start', '');
+				el = jQuery(elName);
+				if (!el.hasClass('timepicker_applied')) {
+					el.addClass("time start");
+					el.timepicker({
+						timeFormat: jtp_opts.format,
+						step: jtp_opts.step,
+						showDuration: true,
+						appendTo: el.parent(),
+						className: 'jtp-full-width'
+					});
+					el.addClass('timepicker_applied');
+				}
+				return;
+			} else if (elName.includes(":end")) {
+				elName = elName.replace(':end', '');
+				el = jQuery(elName);
+				if (!el.hasClass('timepicker_applied')) {
+					el.addClass("time end");
+					el.timepicker({
+						timeFormat: jtp_opts.format,
+						step: jtp_opts.step,
+						showDuration: true,
+						appendTo: el.parent(),
+						className: 'jtp-full-width'
+					});
+					/* Attached a changeTime event to propegate change event through */
+					el.on("changeTime", function () {
+						/* push function to next digest cycle */
+						setTimeout(function () {
+							jQuery(elName).trigger("change");
+
+						}, 0);
+					});
+					el.addClass('timepicker_applied');
+				}
+			} else {
+				return;
 			}
-			if(!jQuery(this).parent().datepair_applied) {
-				jQuery(this).parent().datepair();
-				jQuery(this).parent().datepair_applied = true;
+
+			/* Call datepair on the most common element */
+			var parentContainer = el.parent().parent().parent();
+			if (!parentContainer.hasClass('date_applied')) {
+				jQuery(parentContainer).datepair();
+				parentContainer.addClass('date_applied');
 			}
 		});
 	}
 
-	function jtp_process_listeners(){
-		if(jtp_opts.fields.single && jtp_opts.fields.single.length > 0) {
+	function jtp_process_listeners() {
+		if (jtp_opts.fields.single && jtp_opts.fields.single.length > 0) {
 			jtp_set_timepicker_single_listeners();
 		}
-		if(jtp_opts.fields.duration && jtp_opts.fields.duration.length > 0) {
+		if (jtp_opts.fields.duration && jtp_opts.fields.duration.length > 0) {
 			jtp_set_timepicker_duration_listeners();
 		}
 	}
 
-	jQuery(window).load(function() {
-		if(jtp_fields_single || jtp_fields_duration) {
+	document.addEventListener("DOMContentLoaded", function () {
+		if (jtp_fields_single || jtp_fields_duration) {
 			var el = jQuery('#jtp_fields_single');
-			jtp_opts.fields.single = el.val(); 
+			jtp_opts.fields.single = el.val().split(',');
 			el.remove();
 
 			el = jQuery('#jtp_fields_duration');
-			jtp_opts.fields.duration = el.val(); 
+			jtp_opts.fields.duration = el.val().split(',');
 			el.remove();
 		}
 		jtp_process_listeners();
 	});
-	
-	jQuery(window).change(function() {
+
+	jQuery(window).change(function () {
 		jtp_process_listeners();
 	});
 })();
