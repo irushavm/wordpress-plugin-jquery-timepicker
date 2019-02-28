@@ -7,6 +7,16 @@
 		fields: {
 			single: [],
 			duration: [],
+		},
+		time_default: function () {
+			var time = new Date();
+			time.setMinutes(Math.round(time.getMinutes() /15) * 15);
+			return time;
+		},
+		time_default_end: function () {
+			var time = new Date();
+			time.setMinutes(Math.round(time.getMinutes() /15) * 15);
+			return time;
 		}
 	};
 
@@ -15,6 +25,7 @@
 			var el = jQuery(elname);
 			if (!el.hasClass('timepicker_applied')) {
 				el.timepicker({	timeFormat: jtp_opts.format, step: jtp_opts.step });
+				el.timepicker('setTime', jtp_opts.time_default());
 				el.addClass('timepicker_applied');
 			}
 		});
@@ -35,6 +46,7 @@
 						appendTo: el.parent(),
 						className: 'jtp-full-width'
 					});
+					el.timepicker('setTime', jtp_opts.time_default());
 					el.addClass('timepicker_applied');
 				}
 				return;
@@ -58,6 +70,7 @@
 
 						}, 0);
 					});
+					el.timepicker('setTime', jtp_opts.time_default_end());
 					el.addClass('timepicker_applied');
 				}
 			} else {
@@ -65,7 +78,7 @@
 			}
 
 			/* Call datepair on the most common element */
-			var parentContainer = el.parent().parent().parent();
+			var parentContainer = el.parent().parent().parent().parent();
 			if (!parentContainer.hasClass('date_applied')) {
 				jQuery(parentContainer).datepair();
 				parentContainer.addClass('date_applied');
