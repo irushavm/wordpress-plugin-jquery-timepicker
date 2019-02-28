@@ -15,6 +15,7 @@
 		},
 		time_default_end: function () {
 			var time = new Date();
+			time.setHours(time.getHours() +1);
 			time.setMinutes(Math.round(time.getMinutes() /15) * 15);
 			return time;
 		}
@@ -45,6 +46,13 @@
 						showDuration: true,
 						appendTo: el.parent(),
 						className: 'jtp-full-width'
+					});
+					el.on("changeTime", function () {
+						/* push function to next digest cycle */
+						setTimeout(function () {
+							jQuery(elName).trigger("change");
+
+						}, 0);
 					});
 					el.timepicker('setTime', jtp_opts.time_default());
 					el.addClass('timepicker_applied');
